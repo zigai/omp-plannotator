@@ -1,3 +1,4 @@
+import { parseSgrMouse } from "@oh-my-pi/pi-tui";
 import type { RenderedLayout } from "../types/index.ts";
 
 /**
@@ -5,21 +6,14 @@ import type { RenderedLayout } from "../types/index.ts";
  * and inserted Plannotator option row.
  */
 export function shiftMouseRow(data: string, renderedLayout: RenderedLayout): string {
-    if (!data.startsWith("\x1b")) {
-        return data;
-    }
-    const match = /^(\[<\d+;\d+;)(\d+)([Mm])$/u.exec(data.slice(1));
-    if (match === null) {
+    const mouse = parseSgrMouse(data);
+    if (mouse === null) {
         return data;
     }
 
-    const displayedRow = Number(match[2]) - 1;
-    if (
-        displayedRow < renderedLayout.removeRow ||
-        displayedRow >= renderedLayout.insertedOptionRow
-    ) {
+    if (mouse.row < renderedLayout.removeRow || mouse.row >= renderedLayout.insertedOptionRow) {
         return data;
     }
 
-    return `\x1b${match[1]}${displayedRow + 2}${match[3]}`;
+    return `\x1b[<${mouse.button};${mouse.col + 1};${mouse.row + 2}${mouse.release ? "m" : "M"}`;
 }

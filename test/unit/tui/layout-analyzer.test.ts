@@ -1,50 +1,15 @@
 import { describe, expect, it } from "vitest";
-import {
-    analyzePlanReviewLayout,
-    hasSelectionCursor,
-    isDivider,
-    optionLabelRow,
-    plainText,
-    rebuildOptionRow,
-} from "../../../src/tui/layout-analyzer.ts";
-
-describe("layout-analyzer pure helpers", () => {
-    it("strips VT control characters in plainText", () => {
-        expect(plainText("\x1b[31mRed\x1b[0m Text")).toBe("Red Text");
-    });
-
-    it("locates option label rows correctly", () => {
-        const lines = ["│ Header │", "│ Approve and execute │", "│ Save and quit │"];
-        expect(optionLabelRow(lines, "Approve and execute")).toBe(1);
-        expect(optionLabelRow(lines, "Save and quit")).toBe(2);
-        expect(optionLabelRow(lines, "Nonexistent")).toBe(-1);
-    });
-
-    it("detects selection cursor in hasSelectionCursor", () => {
-        expect(hasSelectionCursor("│  Approve and execute       │", "Approve and execute")).toBe(
-            true,
-        );
-        expect(hasSelectionCursor("│   Approve and execute       │", "Approve and execute")).toBe(
-            false,
-        );
-    });
-
-    it("recognizes divider lines", () => {
-        expect(isDivider("├─────────────────────────────┤")).toBe(true);
-        expect(isDivider("──────")).toBe(true);
-        expect(isDivider("│ Regular row │")).toBe(false);
-    });
-});
+import { analyzePlanReviewLayout, rebuildOptionRow } from "../../../src/tui/layout-analyzer.ts";
 
 describe("analyzePlanReviewLayout", () => {
-    it("analyzes standard host layout", () => {
+    it("analyzes standard host layout with ANSI styling and active selection", () => {
         const lines = [
-            "╭──────── Plan Review ────────╮",
+            "\x1b[1m╭──────── Plan Review ────────╮\x1b[0m",
             "│ body one                    │",
             "│ body two                    │",
             "├──────────────┴──────────────┤",
             "│ Plan mode - next step       │",
-            "│  Approve and execute       │",
+            "│ \x1b[32m Approve and execute\x1b[0m       │",
             "│   Compact context and exec  │",
             "│   Keep context and execute  │",
             "│   Refine plan               │",
@@ -60,6 +25,27 @@ describe("analyzePlanReviewLayout", () => {
         expect(layout?.lastHostOptionLabel).toBe("Save and quit");
         expect(layout?.selectedHostOptionRow).toBe(5);
         expect(layout?.removeRow).toBe(2);
+    });
+
+    it("analyzes layout when Refine plan is the last available option", () => {
+        const lines = [
+            "╭──────── Plan Review ────────╮",
+            "│ body one                    │",
+            "├─────────────────────────────┤",
+            "│ Plan mode - next step       │",
+            "│   Approve and execute       │",
+            "│  Refine plan               │",
+            "├─────────────────────────────┤",
+            "│ ↑↓ select · ⏎ confirm       │",
+            "╰─────────────────────────────╯",
+        ];
+
+        const layout = analyzePlanReviewLayout(lines);
+        expect(layout).toBeDefined();
+        expect(layout?.lastHostOptionLabel).toBe("Refine plan");
+        expect(layout?.lastHostOptionRow).toBe(5);
+        expect(layout?.precedingHostOptionRow).toBe(4);
+        expect(layout?.selectedHostOptionRow).toBe(5);
     });
 
     it("returns undefined when title or prompt is missing", () => {

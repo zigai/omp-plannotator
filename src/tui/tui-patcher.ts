@@ -1,5 +1,5 @@
 import type { ExtensionAPI, ExtensionContext, RegisteredCommand } from "@oh-my-pi/pi-coding-agent";
-import type { Component, TUI } from "@oh-my-pi/pi-tui";
+import type { TUI } from "@oh-my-pi/pi-tui";
 import { openPlanInPlannotator, planPathFromToolCall } from "../plan.ts";
 import { type PatchableTui, TUI_PATCH_STATE, type TuiPatchState } from "../types/index.ts";
 import { analyzePlanReviewLayout } from "./layout-analyzer.ts";
@@ -47,12 +47,6 @@ export function patchPlanReviewOverlays(tui: TUI, openPlan: () => void): () => v
         delete patchableTui[TUI_PATCH_STATE];
     };
 }
-const EMPTY_COMPONENT: Component = {
-    render(width: number): readonly string[] {
-        void width;
-        return [];
-    },
-};
 
 export function installPlanReviewPlannotatorHook(
     pi: ExtensionAPI,
@@ -84,7 +78,9 @@ export function installPlanReviewPlannotatorHook(
                 );
             });
             done();
-            return EMPTY_COMPONENT;
+            return {
+                render: () => [],
+            };
         });
     });
 

@@ -16,48 +16,21 @@ export const HOST_OPTIONS = [
 
 export const LAST_HOST_OPTION_LABELS = ["Save and quit", "Refine plan"] as const;
 
-export function plainText(line: string): string {
-    return stripVTControlCharacters(line);
-}
-
-export function optionLabelRow(lines: readonly string[], label: string): number {
-    return lines.findIndex((line) => plainText(line).includes(label));
-}
-
-export function hasSelectionCursor(line: string, label: string): boolean {
-    const plain = plainText(line);
-    const labelColumn = plain.indexOf(label);
-    const leftBorderColumn = plain.indexOf("│");
-    if (labelColumn < 0 || leftBorderColumn < 0) {
-        return false;
-    }
-    return plain.slice(leftBorderColumn + 1, labelColumn).trim().length > 0;
-}
-
-export function isDivider(line: string): boolean {
-    const plain = plainText(line).trim();
-    return plain.length >= 3 && /^[\u2500-\u257f]+$/u.test(plain);
-}
-
 export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLayout | undefined {
-    if (!lines.some((line) => plainText(line).includes(PLAN_REVIEW_TITLE))) {
+    if (!lines.some((line) => stripVTControlCharacters(line).includes(PLAN_REVIEW_TITLE))) {
         return undefined;
     }
-    if (!lines.some((line) => plainText(line).includes(PLAN_REVIEW_PROMPT))) {
+    if (!lines.some((line) => stripVTControlCharacters(line).includes(PLAN_REVIEW_PROMPT))) {
         return undefined;
     }
 
     const optionRows: Array<{ readonly row: number; readonly label: string }> = [];
     for (const label of HOST_OPTIONS) {
-        const row = optionLabelRow(lines, label);
+        const row = lines.findIndex((line) => stripVTControlCharacters(line).includes(label));
         if (row >= 0) {
             optionRows.push({ row, label });
         }
     }
-    if (optionRows.length === 0) {
-        return undefined;
-    }
-
     optionRows.sort((left, right) => left.row - right.row);
     let lastOption = optionRows.at(-1);
     for (const label of LAST_HOST_OPTION_LABELS) {
@@ -84,7 +57,8 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
 
     let bodyDividerRow = -1;
     for (let row = firstOption.row - 1; row > 0; row -= 1) {
-        if (isDivider(lines[row] ?? "")) {
+        const plain = stripVTControlCharacters(lines[row] ?? "").trim();
+        if (plain.length >= 3 && /^[\u2500-\u257f]+$/u.test(plain)) {
             bodyDividerRow = row;
             break;
         }
@@ -94,16 +68,22 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
         return undefined;
     }
 
-    const selectedHostOption = optionRows.find((option) =>
-        hasSelectionCursor(lines[option.row] ?? "", option.label),
-    );
+    const selectedHostOption = optionRows.find((option) => {
+        const plain = stripVTControlCharacters(lines[option.row] ?? "");
+        const labelColumn = plain.indexOf(option.label);
+        const leftBorderColumn = plain.indexOf("│");
+        if (labelColumn < 0 || leftBorderColumn < 0) {
+            return false;
+        }
+        return plain.slice(leftBorderColumn + 1, labelColumn).trim().length > 0;
+    });
     const unselectedTemplate = optionRows.find((option) => option !== selectedHostOption);
     if (unselectedTemplate === undefined) {
         return undefined;
     }
 
     return {
-        actionsFocused: lines.some((line) => plainText(line).includes("↑↓ select")),
+        actionsFocused: lines.some((line) => stripVTControlCharacters(line).includes("↑↓ select")),
         lastHostOptionRow: lastOption.row,
         lastHostOptionLabel: lastOption.label,
         precedingHostOptionRow: precedingOption.row,
@@ -114,7 +94,7 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
 }
 
 export function rebuildOptionRow(template: string, templateLabel: string, label: string): string {
-    const plain = plainText(template);
+    const plain = stripVTControlCharacters(template);
     const labelColumn = plain.indexOf(templateLabel);
     const rightBorderColumn = plain.lastIndexOf("│");
     if (labelColumn < 0 || rightBorderColumn <= labelColumn) {

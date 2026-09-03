@@ -1,10 +1,10 @@
+import { stripVTControlCharacters } from "node:util";
 import { type Component, matchesKey, parseSgrMouse } from "@oh-my-pi/pi-tui";
 import type { RenderedLayout } from "../types/index.ts";
 import {
     analyzePlanReviewLayout,
     ANNOTATE_PLAN_OPTION_LABEL,
     HOST_OPTIONS,
-    plainText,
     rebuildOptionRow,
 } from "./layout-analyzer.ts";
 import { shiftMouseRow } from "./mouse-mapper.ts";
@@ -39,16 +39,24 @@ export class PlannotatorPlanReviewOverlay implements Component {
         const selectedTemplateLabel =
             layout.selectedHostOptionRow === undefined
                 ? layout.lastHostOptionLabel
-                : (this.#labelAtRow(source, layout.selectedHostOptionRow) ??
-                  layout.lastHostOptionLabel);
+                : this.#labelAtRow(
+                      source,
+                      layout.selectedHostOptionRow,
+                      layout.lastHostOptionLabel,
+                  );
         const unselectedTemplate = source[layout.unselectedTemplateRow] ?? "";
-        const unselectedTemplateLabel =
-            this.#labelAtRow(source, layout.unselectedTemplateRow) ?? layout.lastHostOptionLabel;
+        const unselectedTemplateLabel = this.#labelAtRow(
+            source,
+            layout.unselectedTemplateRow,
+            layout.lastHostOptionLabel,
+        );
 
         if (this.#insertedOptionSelected && layout.selectedHostOptionRow !== undefined) {
-            const selectedLabel =
-                this.#labelAtRow(source, layout.selectedHostOptionRow) ??
-                layout.lastHostOptionLabel;
+            const selectedLabel = this.#labelAtRow(
+                source,
+                layout.selectedHostOptionRow,
+                layout.lastHostOptionLabel,
+            );
             output[layout.selectedHostOptionRow] = rebuildOptionRow(
                 unselectedTemplate,
                 unselectedTemplateLabel,
@@ -138,10 +146,6 @@ export class PlannotatorPlanReviewOverlay implements Component {
         this.original.invalidate?.();
     }
 
-    setIgnoreTight(ignore: boolean): unknown {
-        return this.original.setIgnoreTight?.(ignore);
-    }
-
     dispose(): void {
         this.original.dispose?.();
     }
@@ -152,8 +156,12 @@ export class PlannotatorPlanReviewOverlay implements Component {
         queueMicrotask(this.openPlan);
     }
 
-    #labelAtRow(lines: readonly string[], row: number): string | undefined {
-        const plain = plainText(lines[row] ?? "");
-        return HOST_OPTIONS.find((label) => plain.includes(label));
+    #labelAtRow(lines: readonly string[], row: number, fallback: string): string {
+        const line = lines[row];
+        if (line === undefined) {
+            return fallback;
+        }
+        const plain = stripVTControlCharacters(line);
+        return HOST_OPTIONS.find((label) => plain.includes(label)) ?? fallback;
     }
 }
