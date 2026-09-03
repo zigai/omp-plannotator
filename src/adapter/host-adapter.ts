@@ -8,7 +8,6 @@ import type {
 } from "@oh-my-pi/pi-coding-agent";
 import type { OmpPlannotatorHostAdapter } from "../types/index.ts";
 import { extractOmpEditTargets } from "./patch-targets.ts";
-import { resolveUserMessageOptions } from "./turn-resolver.ts";
 
 type GenericEventHandler = (event: unknown, ctx: ExtensionContext) => unknown;
 type GenericOnSignature = (event: string, handler: GenericEventHandler) => void;
@@ -18,6 +17,10 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
     let currentContext: ExtensionContext | undefined;
 
     pi.on("session_start", (_event, ctx) => {
+        currentContext = ctx;
+    });
+
+    pi.on("session_switch", (_event, ctx) => {
         currentContext = ctx;
     });
 
@@ -42,6 +45,20 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
         // Keep upstream commands as private implementation details for the unified /plannotator router.
     };
 
+    interface UserMessageOptions {
+        readonly deliverAs?: "steer" | "followUp";
+    }
+
+    function resolveUserMessageOptions(
+        options: UserMessageOptions | undefined,
+        context: ExtensionContext | undefined,
+    ): UserMessageOptions | undefined {
+        if (options?.deliverAs === "followUp" && context?.isIdle() === true) {
+            return undefined;
+        }
+        return options;
+    }
+
     const sendUserMessageOverride: ExtensionAPI["sendUserMessage"] = (content, options) => {
         const resolvedOptions = resolveUserMessageOptions(options, currentContext);
         if (resolvedOptions === undefined) {
@@ -50,19 +67,14 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
         }
         pi.sendUserMessage(content, resolvedOptions);
     };
-
-    // SAFETY: Intercepts tool_call to fan out multi-file edit operations across the wrapped handler.
-    function asToolCallHandler(
-        untypedHandler: unknown,
-    ): ExtensionHandler<ToolCallEvent, ToolCallEventResult> {
-        // SAFETY: Verified event name "tool_call" guarantees handler parameter matches ToolCallEvent.
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion */
-        return untypedHandler as ExtensionHandler<ToolCallEvent, ToolCallEventResult>;
-    }
-
     const onOverride = <E, R = undefined>(event: string, handler: ExtensionHandler<E, R>): void => {
         if (event === "tool_call") {
-            const toolCallHandler = asToolCallHandler(handler);
+            // SAFETY: Verified event name "tool_call" guarantees handler parameter matches ToolCallEvent.
+            /* oxlint-disable-next-line antislop/no-chained-type-assertions, typescript/no-unsafe-type-assertion */
+            const toolCallHandler = handler as unknown as ExtensionHandler<
+                ToolCallEvent,
+                ToolCallEventResult
+            >;
             const wrappedHandler = async (
                 toolEvent: ToolCallEvent,
                 ctx: ExtensionContext,
@@ -103,27 +115,13 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
         typedOn.call(pi, event, typedHandler);
     };
 
-    const adaptedApi = new Proxy(pi, {
-        get(target, prop, _receiver) {
-            if (prop === "registerCommand") {
-                return registerCommandOverride;
-            }
-            if (prop === "sendUserMessage") {
-                return sendUserMessageOverride;
-            }
-            if (prop === "on") {
-                return onOverride;
-            }
-            // SAFETY: Forward property access to the underlying ExtensionAPI instance.
-            const value: unknown = Reflect.get(target, prop, target);
-            if (typeof value === "function") {
-                // SAFETY: Dynamic bind of underlying host ExtensionAPI method.
-                /* oxlint-disable-next-line typescript/no-unsafe-return, typescript/no-unsafe-call, typescript/no-unsafe-member-access */
-                return value.bind(target);
-            }
-            return value;
-        },
-    });
+    // SAFETY: Prototype delegation preserves host ExtensionAPI methods without proxy dynamic binding overhead.
+    /* oxlint-disable-next-line typescript/no-unsafe-type-assertion */
+    const adaptedApi: ExtensionAPI = Object.assign(Object.create(pi), {
+        registerCommand: registerCommandOverride,
+        sendUserMessage: sendUserMessageOverride,
+        on: onOverride,
+    }) as ExtensionAPI;
 
     return {
         api: adaptedApi,

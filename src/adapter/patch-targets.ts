@@ -1,5 +1,4 @@
 import { Patch } from "@oh-my-pi/hashline";
-import { expandApplyPatchToEntries } from "@oh-my-pi/pi-coding-agent/edit/modes/apply-patch";
 import type { OmpEditPayload } from "../types/index.ts";
 
 /**
@@ -24,11 +23,9 @@ export function extractOmpEditTargets(
     }
 
     if (typeof input.input === "string" && input.input.length > 0) {
-        let parsedViaHashline = false;
         try {
             const patch = Patch.parse(input.input, { cwd });
             if (patch.sections.length > 0) {
-                parsedViaHashline = true;
                 for (const section of patch.sections) {
                     if (typeof section.path === "string" && section.path.length > 0) {
                         targets.push(section.path);
@@ -44,25 +41,9 @@ export function extractOmpEditTargets(
                 }
             }
         } catch {
-            // Hashline parsing did not succeed; try apply-patch next.
-        }
-
-        if (!parsedViaHashline) {
-            try {
-                const entries = expandApplyPatchToEntries({ input: input.input });
-                for (const entry of entries) {
-                    if (typeof entry.path === "string" && entry.path.length > 0) {
-                        targets.push(entry.path);
-                    }
-                    if (typeof entry.rename === "string" && entry.rename.length > 0) {
-                        targets.push(entry.rename);
-                    }
-                }
-            } catch {
-                // Non-apply-patch payload; unparsed.
-            }
+            // Hashline parsing did not succeed; non-hashline payloads yield no targets.
         }
     }
 
-    return targets.filter((target, index) => targets.indexOf(target) === index);
+    return Array.from(new Set(targets));
 }

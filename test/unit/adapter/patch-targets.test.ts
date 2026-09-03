@@ -33,7 +33,7 @@ describe("extractOmpEditTargets", () => {
         expect(targets).toEqual(["plans/old-plan.md", "plans/new-plan.md"]);
     });
 
-    it("extracts target and rename paths from apply-patch format", () => {
+    it("ignores legacy apply-patch format after clean cutover to hashline", () => {
         const applyPatchInput = [
             "*** Begin Patch",
             "*** Update File: plans/source.md",
@@ -44,7 +44,7 @@ describe("extractOmpEditTargets", () => {
             "*** End Patch",
         ].join("\n");
         const targets = extractOmpEditTargets({ input: applyPatchInput }, cwd);
-        expect(targets).toEqual(["plans/source.md", "plans/dest.md"]);
+        expect(targets).toEqual([]);
     });
 
     it("deduplicates paths while preserving first authored order", () => {

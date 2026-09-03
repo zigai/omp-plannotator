@@ -87,6 +87,38 @@ describe("createOmpPlannotatorHostAdapter - sendUserMessage", () => {
             options: { deliverAs: "followUp" },
         });
     });
+
+    it("preserves options when context is undefined prior to session start", () => {
+        const harness = createRecordingApiHarness();
+        const adapter = createOmpPlannotatorHostAdapter(harness.api);
+
+        adapter.api.sendUserMessage("Initial prompt", { deliverAs: "followUp" });
+
+        expect(harness.sentUserMessages).toHaveLength(1);
+        expect(harness.sentUserMessages[0]).toEqual({
+            content: "Initial prompt",
+            options: { deliverAs: "followUp" },
+        });
+    });
+
+    it("synchronizes tracked session context on session_switch", async () => {
+        const harness = createRecordingApiHarness();
+        const adapter = createOmpPlannotatorHostAdapter(harness.api);
+
+        const { context: idleContext } = createTestExtensionContext({ idle: true });
+        const { context: streamingContext } = createTestExtensionContext({ idle: false });
+
+        await harness.emitEvent("session_start", {}, idleContext);
+        await harness.emitEvent("session_switch", {}, streamingContext);
+
+        adapter.api.sendUserMessage("Switched session", { deliverAs: "followUp" });
+
+        expect(harness.sentUserMessages).toHaveLength(1);
+        expect(harness.sentUserMessages[0]).toEqual({
+            content: "Switched session",
+            options: { deliverAs: "followUp" },
+        });
+    });
 });
 
 describe("createOmpPlannotatorHostAdapter - registerCommand", () => {
