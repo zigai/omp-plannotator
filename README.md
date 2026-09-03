@@ -5,7 +5,7 @@
 [![CI](https://github.com/zigai/omp-plannotator/actions/workflows/ci.yml/badge.svg)](https://github.com/zigai/omp-plannotator/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/zigai/omp-plannotator.svg)](https://github.com/zigai/omp-plannotator/blob/main/LICENSE)
 
-OMP extension adapter for [Plannotator](https://github.com/backnotprop/plannotator), bringing visual plan reviews, interactive code diff annotations, and plan-mode write gating to Oh My Pi.
+[Plannotator](https://github.com/backnotprop/plannotator) extension for Oh My Pi, bringing visual plan reviews, interactive code diff annotations, and browser-based feedback.
 
 ## Installation
 
@@ -17,7 +17,7 @@ omp plugin install github:zigai/omp-plannotator
 
 ### Slash Commands
 
-The primary command is `/anno` (with `/plannotator` retained as an alias) to avoid collisions with OMP's built-in `/plan` command.
+The primary command is `/anno` to avoid collisions with OMP's built-in `/plan` command. `/plannotator` is retained as an alias.
 
 - `/anno` — Annotate the last assistant response (default).
 - `/anno diff` — Open interactive code review for working tree git diff or staged changes.
