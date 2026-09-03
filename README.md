@@ -19,6 +19,8 @@ omp plugin install github:zigai/omp-plannotator
 
 The primary command is `/anno` to avoid collisions with OMP's built-in `/plan` command. `/plannotator` is retained as an alias.
 
+Typing `/anno` provides inline ghost text help (`/anno diff | review | <path>`):
+
 - `/anno` — Annotate the last assistant response (default).
 - `/anno diff` — Open interactive code review for working tree git diff or staged changes.
 - `/anno review <url>` — Open review for a GitHub PR or GitLab merge request URL.
