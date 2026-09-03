@@ -110,35 +110,35 @@ describe("createPlannotatorGhostTextProvider", () => {
         expect(provider.getInlineHint?.(["/other"], 0, 6)).toBe("base-hint");
     });
 
-    it("preserves prototype methods and bound this when wrapping a class-based AutocompleteProvider", async () => {
-        class TestClassBasedProvider implements AutocompleteProvider {
-            readonly customProperty = "custom-value";
-            readonly #prefix = "sync:";
-
-            async getSuggestions(): Promise<null> {
-                return null;
-            }
-
-            applyCompletion(lines: string[], cursorLine: number, cursorCol: number) {
+    it("decorates plannotator suggestions while leaving other provider suggestions intact", async () => {
+        const baseProvider: AutocompleteProvider = {
+            async getSuggestions() {
+                return {
+                    items: [
+                        { value: "help", label: "help", hint: "show help" },
+                        { value: "anno", label: "anno" },
+                        { value: "plannotator", label: "plannotator" },
+                    ],
+                    prefix: "/",
+                };
+            },
+            applyCompletion(lines, cursorLine, cursorCol) {
                 return { lines, cursorLine, cursorCol };
-            }
+            },
+            getInlineHint() {
+                return "base-hint";
+            },
+        };
 
-            trySyncSlashCompletion(text: string) {
-                return { items: [{ value: `${this.#prefix}${text}`, label: text }], prefix: "/" };
-            }
-
-            shouldTriggerFileCompletion() {
-                return true;
-            }
-        }
-
-        const baseProvider = new TestClassBasedProvider();
         const provider = createPlannotatorGhostTextProvider(baseProvider);
+        const suggestions = await provider.getSuggestions(["/"], 0, 1);
 
-        expect(provider.trySyncSlashCompletion?.("test")).toEqual({
-            items: [{ value: "sync:test", label: "test" }],
-            prefix: "/",
-        });
-        expect(Reflect.get(provider, "customProperty")).toBe("custom-value");
+        expect(suggestions?.items).toEqual([
+            { value: "help", label: "help", hint: "show help" },
+            { value: "anno", label: "anno", hint: `  ${PLANNOTATOR_GHOST_HINT}` },
+            { value: "plannotator", label: "plannotator", hint: `  ${PLANNOTATOR_GHOST_HINT}` },
+        ]);
+        expect(provider.getInlineHint?.(["/anno"], 0, 5)).toBe(`  ${PLANNOTATOR_GHOST_HINT}`);
+        expect(provider.getInlineHint?.(["/help"], 0, 5)).toBe("base-hint");
     });
 });

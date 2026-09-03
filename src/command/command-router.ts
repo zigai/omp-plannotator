@@ -10,6 +10,20 @@ import {
     REQUIRED_UPSTREAM_COMMANDS,
 } from "./constants.ts";
 
+async function dispatchCommand(
+    commands: ReadonlyMap<string, RegisteredCommand>,
+    name: string,
+    args: string,
+    ctx: ExtensionCommandContext,
+): Promise<void> {
+    const command = commands.get(`plannotator-${name}`);
+    if (command === undefined) {
+        ctx.ui.notify(`Plannotator ${name} command not available`, "error");
+        return;
+    }
+    await command.handler(args, ctx);
+}
+
 export function registerPlannotatorCommand(
     pi: ExtensionAPI,
     commands: ReadonlyMap<string, RegisteredCommand>,
@@ -31,22 +45,12 @@ export function registerPlannotatorCommand(
             const remainder = trimmed.slice(firstToken.length).trimStart();
 
             if (trimmed.length === 0 || firstToken === "last") {
-                const lastCommand = commands.get("plannotator-last");
-                if (lastCommand === undefined) {
-                    ctx.ui.notify("Plannotator last command not available", "error");
-                    return;
-                }
-                await lastCommand.handler("", ctx);
+                await dispatchCommand(commands, "last", "", ctx);
                 return;
             }
 
             if (firstToken === "diff" || firstToken === "review") {
-                const reviewCommand = commands.get("plannotator-review");
-                if (reviewCommand === undefined) {
-                    ctx.ui.notify("Plannotator review command not available", "error");
-                    return;
-                }
-                await reviewCommand.handler(remainder, ctx);
+                await dispatchCommand(commands, "review", remainder, ctx);
                 return;
             }
 
@@ -56,33 +60,20 @@ export function registerPlannotatorCommand(
                 /^https?:\/\/.*\/pull\/\d+/i.test(firstToken) ||
                 /^https?:\/\/.*\/merge_requests\/\d+/i.test(firstToken)
             ) {
-                const reviewCommand = commands.get("plannotator-review");
-                if (reviewCommand === undefined) {
-                    ctx.ui.notify("Plannotator review command not available", "error");
-                    return;
-                }
-                await reviewCommand.handler(trimmed, ctx);
+                await dispatchCommand(commands, "review", trimmed, ctx);
                 return;
             }
 
-            const annotateCommand = commands.get("plannotator-annotate");
-            if (annotateCommand === undefined) {
-                ctx.ui.notify("Plannotator annotate command not available", "error");
-                return;
-            }
-
-            await annotateCommand.handler(trimmed, ctx);
+            await dispatchCommand(commands, "annotate", trimmed, ctx);
         },
     };
 
     pi.registerCommand(ANNO_COMMAND_NAME, commandDefinition);
     pi.registerCommand(PLANNOTATOR_COMMAND_NAME, commandDefinition);
 
-    if (typeof pi.on === "function") {
-        pi.on("session_start", (_event, context) => {
-            if (context.hasUI && typeof context.ui.addAutocompleteProvider === "function") {
-                context.ui.addAutocompleteProvider(createPlannotatorGhostTextProvider);
-            }
-        });
-    }
+    pi.on("session_start", (_event, context) => {
+        if (context.hasUI && typeof context.ui.addAutocompleteProvider === "function") {
+            context.ui.addAutocompleteProvider(createPlannotatorGhostTextProvider);
+        }
+    });
 }
