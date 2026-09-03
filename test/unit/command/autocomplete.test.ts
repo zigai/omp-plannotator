@@ -22,8 +22,8 @@ describe("createPlannotatorGhostTextProvider", () => {
         const result = await provider.getSuggestions(["/an"], 0, 3);
 
         expect(result?.items).toEqual([
-            { value: "anno", label: "anno", hint: `  ${PLANNOTATOR_GHOST_HINT}` },
-            { value: "plannotator", label: "plannotator", hint: `  ${PLANNOTATOR_GHOST_HINT}` },
+            { value: "anno", label: "anno", hint: ` ${PLANNOTATOR_GHOST_HINT}` },
+            { value: "plannotator", label: "plannotator", hint: ` ${PLANNOTATOR_GHOST_HINT}` },
             { value: "other", label: "other" },
         ]);
     });
@@ -40,11 +40,33 @@ describe("createPlannotatorGhostTextProvider", () => {
 
         expect(result).toBeNull();
     });
+    it("suppresses dropdown suggestions when typing /anno or /plannotator and arguments", async () => {
+        const fakeBaseProvider: AutocompleteProvider = {
+            getSuggestions: async () => ({
+                prefix: "/",
+                items: [{ value: "anno", label: "anno" }],
+            }),
+            applyCompletion: (lines, cursorLine, cursorCol) => ({ lines, cursorLine, cursorCol }),
+            getInlineHint: () => null,
+        };
 
-    it("applies completion positioning the cursor before the space so block cursor does not cover 'd'", () => {
+        const provider = createPlannotatorGhostTextProvider(fakeBaseProvider);
+        expect(await provider.getSuggestions(["/anno"], 0, 5)).toBeNull();
+        expect(await provider.getSuggestions(["/anno "], 0, 6)).toBeNull();
+        expect(await provider.getSuggestions(["/anno diff"], 0, 10)).toBeNull();
+        expect(await provider.getSuggestions(["/anno review "], 0, 13)).toBeNull();
+        expect(await provider.getSuggestions(["/plannotator"], 0, 12)).toBeNull();
+        expect(await provider.getSuggestions(["/plannotator "], 0, 13)).toBeNull();
+    });
+
+    it("delegates applyCompletion to base provider", () => {
         const fakeBaseProvider: AutocompleteProvider = {
             getSuggestions: async () => null,
-            applyCompletion: (lines, cursorLine, cursorCol) => ({ lines, cursorLine, cursorCol }),
+            applyCompletion: (lines, cursorLine, cursorCol, item) => ({
+                lines: [`/${item.value} `],
+                cursorLine,
+                cursorCol: item.value.length + 2,
+            }),
             getInlineHint: () => null,
         };
 
@@ -58,9 +80,9 @@ describe("createPlannotatorGhostTextProvider", () => {
         );
 
         expect(applied).toEqual({
-            lines: ["/anno"],
+            lines: ["/anno "],
             cursorLine: 0,
-            cursorCol: 5,
+            cursorCol: 6,
         });
     });
 
@@ -91,7 +113,7 @@ describe("createPlannotatorGhostTextProvider", () => {
         });
     });
 
-    it("provides inline ghost text hints with leading space so block cursor does not cover 'd'", () => {
+    it("provides inline ghost text hints and completes subcommands", () => {
         const fakeBaseProvider: AutocompleteProvider = {
             getSuggestions: async () => null,
             applyCompletion: (lines, cursorLine, cursorCol) => ({ lines, cursorLine, cursorCol }),
@@ -99,15 +121,36 @@ describe("createPlannotatorGhostTextProvider", () => {
         };
 
         const provider = createPlannotatorGhostTextProvider(fakeBaseProvider);
-        expect(provider.getInlineHint?.(["/anno"], 0, 5)).toBe(`  ${PLANNOTATOR_GHOST_HINT}`);
-        expect(provider.getInlineHint?.(["/anno "], 0, 6)).toBe(`  ${PLANNOTATOR_GHOST_HINT}`);
+        expect(provider.getInlineHint?.(["/anno"], 0, 5)).toBe(` ${PLANNOTATOR_GHOST_HINT}`);
+        expect(provider.getInlineHint?.(["/anno "], 0, 6)).toBe(PLANNOTATOR_GHOST_HINT);
+        expect(provider.getInlineHint?.(["/anno d"], 0, 7)).toBe("iff");
+        expect(provider.getInlineHint?.(["/anno r"], 0, 7)).toBe("eview <url>");
+        expect(provider.getInlineHint?.(["/anno review "], 0, 13)).toBe("<url>");
+        expect(provider.getInlineHint?.(["/anno l"], 0, 7)).toBe("ast");
         expect(provider.getInlineHint?.(["/plannotator"], 0, 12)).toBe(
-            `  ${PLANNOTATOR_GHOST_HINT}`,
+            ` ${PLANNOTATOR_GHOST_HINT}`,
         );
-        expect(provider.getInlineHint?.(["/plannotator "], 0, 13)).toBe(
-            `  ${PLANNOTATOR_GHOST_HINT}`,
-        );
+        expect(provider.getInlineHint?.(["/plannotator "], 0, 13)).toBe(PLANNOTATOR_GHOST_HINT);
         expect(provider.getInlineHint?.(["/other"], 0, 6)).toBe("base-hint");
+    });
+
+    it("preserves prototype methods from base provider", () => {
+        class BaseWithPrototype implements AutocompleteProvider {
+            async getSuggestions() {
+                return null;
+            }
+            applyCompletion(lines: string[], cursorLine: number, cursorCol: number) {
+                return { lines, cursorLine, cursorCol };
+            }
+            trySyncSlashCompletion(prefix: string) {
+                return { items: [], prefix };
+            }
+        }
+
+        const base = new BaseWithPrototype();
+        const provider = createPlannotatorGhostTextProvider(base);
+        expect(typeof provider.trySyncSlashCompletion).toBe("function");
+        expect(provider.trySyncSlashCompletion?.("/test")).toEqual({ items: [], prefix: "/test" });
     });
 
     it("decorates plannotator suggestions while leaving other provider suggestions intact", async () => {
@@ -135,10 +178,10 @@ describe("createPlannotatorGhostTextProvider", () => {
 
         expect(suggestions?.items).toEqual([
             { value: "help", label: "help", hint: "show help" },
-            { value: "anno", label: "anno", hint: `  ${PLANNOTATOR_GHOST_HINT}` },
-            { value: "plannotator", label: "plannotator", hint: `  ${PLANNOTATOR_GHOST_HINT}` },
+            { value: "anno", label: "anno", hint: ` ${PLANNOTATOR_GHOST_HINT}` },
+            { value: "plannotator", label: "plannotator", hint: ` ${PLANNOTATOR_GHOST_HINT}` },
         ]);
-        expect(provider.getInlineHint?.(["/anno"], 0, 5)).toBe(`  ${PLANNOTATOR_GHOST_HINT}`);
+        expect(provider.getInlineHint?.(["/anno"], 0, 5)).toBe(` ${PLANNOTATOR_GHOST_HINT}`);
         expect(provider.getInlineHint?.(["/help"], 0, 5)).toBe("base-hint");
     });
 });

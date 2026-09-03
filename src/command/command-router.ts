@@ -1,6 +1,7 @@
 import type {
     ExtensionAPI,
     ExtensionCommandContext,
+    ExtensionContext,
     RegisteredCommand,
 } from "@oh-my-pi/pi-coding-agent";
 import { createPlannotatorGhostTextProvider } from "./autocomplete.ts";
@@ -70,10 +71,18 @@ export function registerPlannotatorCommand(
 
     pi.registerCommand(ANNO_COMMAND_NAME, commandDefinition);
     pi.registerCommand(PLANNOTATOR_COMMAND_NAME, commandDefinition);
-
-    pi.on("session_start", (_event, context) => {
+    const registerAutocomplete = (context: ExtensionContext): void => {
         if (context.hasUI && typeof context.ui.addAutocompleteProvider === "function") {
             context.ui.addAutocompleteProvider(createPlannotatorGhostTextProvider);
+        }
+    };
+
+    pi.on("session_start", (_event, context) => {
+        registerAutocomplete(context);
+        if (typeof context.setTimeout === "function") {
+            context.setTimeout(() => {
+                registerAutocomplete(context);
+            }, 50);
         }
     });
 }
