@@ -1,11 +1,9 @@
 # OMP Plannotator
 
-[![npm version](https://img.shields.io/npm/v/omp-plannotator.svg)](https://www.npmjs.com/package/omp-plannotator)
-[![npm downloads](https://img.shields.io/npm/dm/omp-plannotator.svg)](https://www.npmjs.com/package/omp-plannotator)
 [![CI](https://github.com/zigai/omp-plannotator/actions/workflows/ci.yml/badge.svg)](https://github.com/zigai/omp-plannotator/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/zigai/omp-plannotator.svg)](https://github.com/zigai/omp-plannotator/blob/main/LICENSE)
 
-[Plannotator](https://github.com/backnotprop/plannotator) extension for Oh My Pi, bringing visual plan reviews, interactive code diff annotations, and browser-based feedback.
+[Plannotator](https://github.com/backnotprop/plannotator) extension for [Oh My Pi](https://github.com/can1357/oh-my-pi).
 
 ## Installation
 
