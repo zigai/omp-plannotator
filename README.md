@@ -26,7 +26,7 @@ The primary command is `/anno` (with `/plannotator` retained as an alias) to avo
 
 ### Plan Review Integration
 
-During OMP plan mode, an option to annotate with Plannotator is automatically added to the plan approval dialog.
+During OMP plan mode, an option to annotate with Plannotator is added to the plan approval dialog.
 
 ## License
 
