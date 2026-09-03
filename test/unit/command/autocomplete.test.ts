@@ -153,6 +153,31 @@ describe("createPlannotatorGhostTextProvider", () => {
         expect(provider.trySyncSlashCompletion?.("/test")).toEqual({ items: [], prefix: "/test" });
     });
 
+    it("delegates applyCompletion correctly when base provider has private fields", () => {
+        class BaseWithPrivateField implements AutocompleteProvider {
+            #secret = "delegated";
+
+            async getSuggestions() {
+                return null;
+            }
+
+            applyCompletion(lines: string[], cursorLine: number, cursorCol: number) {
+                return { lines: [this.#secret], cursorLine, cursorCol };
+            }
+        }
+
+        const base = new BaseWithPrivateField();
+        const provider = createPlannotatorGhostTextProvider(base);
+        const result = provider.applyCompletion(
+            ["/test"],
+            0,
+            5,
+            { value: "test", label: "test" },
+            "/test",
+        );
+        expect(result.lines).toEqual(["delegated"]);
+    });
+
     it("decorates plannotator suggestions while leaving other provider suggestions intact", async () => {
         const baseProvider: AutocompleteProvider = {
             async getSuggestions() {

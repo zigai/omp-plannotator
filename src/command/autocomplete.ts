@@ -48,10 +48,7 @@ export function getAnnoInlineHint(textBeforeCursor: string): string | null {
 export function createPlannotatorGhostTextProvider(
     base: AutocompleteProvider,
 ): AutocompleteProvider {
-    // SAFETY: Prototype delegation preserves all host AutocompleteProvider methods
-    // (such as trySyncSlashCompletion, shouldTriggerFileCompletion) without dropping prototype functions.
-    /* oxlint-disable-next-line typescript/no-unsafe-type-assertion */
-    return Object.assign(Object.create(base), {
+    const provider: AutocompleteProvider = {
         async getSuggestions(lines: string[], line: number, col: number) {
             const currentLine = lines[line] ?? "";
             const textBeforeCursor = currentLine.slice(0, col);
@@ -70,6 +67,9 @@ export function createPlannotatorGhostTextProvider(
                 ),
             };
         },
+        applyCompletion(lines, cursorLine, cursorCol, item, prefix) {
+            return base.applyCompletion(lines, cursorLine, cursorCol, item, prefix);
+        },
         getInlineHint(lines: string[], cursorLine: number, cursorCol: number) {
             const currentLine = lines[cursorLine] ?? "";
             const textBeforeCursor = currentLine.slice(0, cursorCol);
@@ -79,5 +79,19 @@ export function createPlannotatorGhostTextProvider(
             }
             return base.getInlineHint?.(lines, cursorLine, cursorCol) ?? null;
         },
-    }) as AutocompleteProvider;
+        trySyncSlashCompletion(textBeforeCursor: string) {
+            return base.trySyncSlashCompletion?.(textBeforeCursor) ?? null;
+        },
+        trySyncInlineReplace(textBeforeCursor: string) {
+            return base.trySyncInlineReplace?.(textBeforeCursor) ?? null;
+        },
+        shouldTriggerFileCompletion(lines: string[], cursorLine: number, cursorCol: number) {
+            return base.shouldTriggerFileCompletion?.(lines, cursorLine, cursorCol) ?? true;
+        },
+    };
+    if (base.getForceFileSuggestions !== undefined) {
+        provider.getForceFileSuggestions = (lines, cursorLine, cursorCol) =>
+            base.getForceFileSuggestions!(lines, cursorLine, cursorCol);
+    }
+    return provider;
 }
