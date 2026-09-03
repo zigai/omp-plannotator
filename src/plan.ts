@@ -94,7 +94,7 @@ export function resolveExistingPlanPath(
     return undefined;
 }
 
-function toCommandContext(context: ExtensionContext): ExtensionCommandContext {
+export function toCommandContext(context: ExtensionContext): ExtensionCommandContext {
     const commandDefaults = {
         getContextUsage: () => undefined,
         waitForIdle: async (): Promise<void> => {},

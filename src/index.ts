@@ -3,6 +3,7 @@ import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 import plannotator from "@plannotator/pi-extension/index.ts";
 import { createOmpPlannotatorHostAdapter } from "./adapter/host-adapter.ts";
 import { registerPlannotatorCommand } from "./command/command-router.ts";
+import { registerPlannotatorShortcuts } from "./command/shortcuts.ts";
 import { installPlanReviewPlannotatorHook } from "./tui/tui-patcher.ts";
 
 export default function ompPlannotator(pi: ExtensionAPI): void {
@@ -16,4 +17,5 @@ export default function ompPlannotator(pi: ExtensionAPI): void {
     installPlanReviewPlannotatorHook(pi, adapter.commands);
 
     registerPlannotatorCommand(pi, adapter.commands);
+    registerPlannotatorShortcuts(pi, adapter.commands);
 }

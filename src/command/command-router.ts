@@ -11,7 +11,7 @@ import {
     REQUIRED_UPSTREAM_COMMANDS,
 } from "./constants.ts";
 
-async function dispatchCommand(
+export async function dispatchCommand(
     commands: ReadonlyMap<string, RegisteredCommand>,
     name: string,
     args: string,

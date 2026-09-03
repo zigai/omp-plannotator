@@ -1,3 +1,5 @@
+import type { KeyId } from "@oh-my-pi/pi-coding-agent";
+
 export const ANNO_COMMAND_NAME = "anno";
 export const PLANNOTATOR_COMMAND_NAME = "plannotator";
 export const PLANNOTATOR_GHOST_HINT = "diff | review | <path>";
@@ -29,3 +31,6 @@ export const REQUIRED_UPSTREAM_COMMANDS = [
     "plannotator-annotate",
     "plannotator-last",
 ] as const;
+
+export const ANNO_LAST_SHORTCUT: KeyId = "alt+shift+a";
+export const ANNO_DIFF_SHORTCUT: KeyId = "alt+shift+d";
