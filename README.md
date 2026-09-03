@@ -24,6 +24,18 @@ Typing `/anno` provides inline ghost text help (`/anno diff | review | <path>`):
 - `/anno review <url>` — Open review for a GitHub PR or GitLab merge request URL.
 - `/anno <path>` — Open visual annotation on a specific file or directory path.
 
+### Keyboard Shortcuts
+
+| Shortcut      | Action                                                     |
+| ------------- | ---------------------------------------------------------- |
+| `Alt+Shift+A` | Annotate last assistant response in Plannotator            |
+| `Alt+Shift+D` | Review working tree git diff in Plannotator (`/anno diff`) |
+| `Ctrl+Alt+P`  | Toggle Plannotator plan mode (upstream)                    |
+
+Shortcuts trigger from the prompt editor while the agent is idle.
+
+Keybindings can be changed in `~/.omp/agent/keybindings.yml`.
+
 ### Plan Review Integration
 
 During OMP plan mode, an option to annotate with Plannotator is added to the plan approval dialog.
