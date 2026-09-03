@@ -10,7 +10,6 @@ import type {
     KeyId,
     RegisteredCommand,
 } from "@oh-my-pi/pi-coding-agent";
-import { vi } from "vitest";
 
 export interface RegisteredTool {
     readonly name: string;
@@ -91,16 +90,16 @@ export function createRecordingApiHarness(
         registerTool(definition: RegisteredTool): void {
             tools.set(definition.name, definition);
         },
-        registerMessageRenderer: vi.fn(),
-        registerAssistantThinkingRenderer: vi.fn(),
+        registerMessageRenderer: () => {},
+        registerAssistantThinkingRenderer: () => {},
         getFlag: (name: string) =>
             name === "plan" && options.startInPlanMode === true ? true : flags.get(name)?.default,
         getCommands: () => Array.from(commands.values()),
         getActiveTools: () => ["read", "edit", "write", "bash", "grep", "glob"],
-        setActiveTools: vi.fn(),
+        setActiveTools: () => {},
         getThinkingLevel: () => "medium",
-        setThinkingLevel: vi.fn(),
-        setModel: vi.fn(),
+        setThinkingLevel: () => {},
+        setModel: () => {},
         appendEntry(customType: string, data: unknown): void {
             appendedEntries.push({ customType, data });
         },
@@ -110,8 +109,8 @@ export function createRecordingApiHarness(
             handlers.set(event, list);
         },
         events: {
-            on: vi.fn(),
-            emit: vi.fn(),
+            on: () => {},
+            emit: () => {},
         },
         sendUserMessage(
             content: unknown,

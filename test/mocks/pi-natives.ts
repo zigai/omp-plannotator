@@ -1,12 +1,7 @@
 // Mock for @oh-my-pi/pi-natives in Vitest under Node.js
-export const diffLineRuns = () => [];
-export const diffLines = () => [];
-export const structuredPatchHunks = () => [];
-export const enclosingBlockBoundaries = () => null;
 export const glob = () => [];
 export const grep = () => [];
 export const listWorkspace = () => [];
-export const countTokens = () => 0;
 export const sliceWithWidth = (s: string, startCol = 0, length = s.length) => ({
     text: s.slice(startCol, startCol + length),
 });
@@ -32,15 +27,3 @@ export const matchesKey = (data: string, keyId: string, kittyProtocolActive: boo
     }
     return false;
 };
-export const Encoding = {
-    ClaudeV3: "ClaudeV3",
-    ClaudeV47: "ClaudeV47",
-    ClaudeV5: "ClaudeV5",
-    ClaudeV5Sonnet: "ClaudeV5Sonnet",
-    Qwen3: "Qwen3",
-    DeepSeekV3: "DeepSeekV3",
-    KimiK2: "KimiK2",
-    Glm5: "Glm5",
-    O200kBase: "O200kBase",
-    Cl100kBase: "Cl100kBase",
-} as const;

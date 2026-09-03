@@ -1,8 +1,10 @@
 // SAFETY: Test harness intentionally provides structural fakes for ExtensionContext.
 /* oxlint-disable typescript/no-unsafe-type-assertion, antislop/no-chained-type-assertions */
 
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { ExtensionCommandContext, ExtensionContext } from "@oh-my-pi/pi-coding-agent";
-import { vi } from "vitest";
 
 export interface RecordedNotification {
     readonly message: string;
@@ -40,12 +42,12 @@ export function createTestExtensionContext(
             notify: (message: string, type = "info") => {
                 notifications.push({ message, type });
             },
-            custom: vi.fn().mockResolvedValue(undefined),
-            setStatus: vi.fn(),
-            setWidget: vi.fn(),
-            setHeader: vi.fn(),
-            setFooter: vi.fn(),
-            addAutocompleteProvider: vi.fn(),
+            custom: async () => undefined,
+            setStatus: () => {},
+            setWidget: () => {},
+            setHeader: () => {},
+            setFooter: () => {},
+            addAutocompleteProvider: () => {},
             theme: {
                 fg: (_color: string, text: string) => text,
                 bg: (_color: string, text: string) => text,
@@ -61,8 +63,8 @@ export function createTestExtensionContext(
                       getSessionName: () => undefined,
                       getSessionFile: () => "/workspace/.session.jsonl",
                   },
-        setActiveTools: vi.fn(),
-        setSessionName: vi.fn(),
+        setActiveTools: () => {},
+        setSessionName: () => {},
     };
 
     return {
@@ -83,4 +85,20 @@ export function createTestCommandContext(
 
     // SAFETY: Structural fake for ExtensionCommandContext.
     return ctx as unknown as ExtensionCommandContext;
+}
+
+export interface TempPlanFixture {
+    readonly tempDir: string;
+    readonly planFile: string;
+    readonly cleanup: () => void;
+}
+
+export function createTempPlanFixture(name = "plan.md", content = "# Plan"): TempPlanFixture {
+    const tempDir = mkdtempSync(join(tmpdir(), "omp-test-plan-"));
+    const planFile = join(tempDir, name);
+    writeFileSync(planFile, content);
+    const cleanup = () => {
+        rmSync(tempDir, { recursive: true, force: true });
+    };
+    return { tempDir, planFile, cleanup };
 }
