@@ -30,6 +30,7 @@ export function extractOmpEditTargets(
                     if (typeof section.path === "string" && section.path.length > 0) {
                         targets.push(section.path);
                     }
+
                     const parsed = section.parse();
                     if (
                         parsed.fileOp?.kind === "move" &&

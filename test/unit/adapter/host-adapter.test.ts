@@ -148,6 +148,7 @@ describe("createOmpPlannotatorHostAdapter - tool_call interception", () => {
             if ("path" in event.input && typeof event.input.path === "string") {
                 evaluatedPaths.push(event.input.path);
             }
+
             return undefined;
         });
 
@@ -164,9 +165,11 @@ describe("createOmpPlannotatorHostAdapter - tool_call interception", () => {
             input: { input: hashlineInput },
         };
         expect(hostHandler).toBeDefined();
+
         if (hostHandler === undefined) {
             throw new Error("Expected hostHandler to be registered");
         }
+
         await hostHandler(toolEvent, context);
         expect(evaluatedPaths).toEqual(["plans/section1.md", "plans/section2.md"]);
     });
@@ -186,6 +189,7 @@ describe("createOmpPlannotatorHostAdapter - tool_call interception", () => {
                     reason: `Blocked non-markdown file: ${event.input.path}`,
                 };
             }
+
             return undefined;
         });
 
@@ -201,9 +205,11 @@ describe("createOmpPlannotatorHostAdapter - tool_call interception", () => {
             input: { input: hashlineInput },
         };
         expect(hostHandler).toBeDefined();
+
         if (hostHandler === undefined) {
             throw new Error("Expected hostHandler to be registered");
         }
+
         const result = await hostHandler(toolEvent, context);
         expect(result).toEqual({
             block: true,
@@ -231,9 +237,11 @@ describe("createOmpPlannotatorHostAdapter - tool_call interception", () => {
             input: {},
         };
         expect(hostHandler).toBeDefined();
+
         if (hostHandler === undefined) {
             throw new Error("Expected hostHandler to be registered");
         }
+
         await hostHandler(toolEvent, context);
         expect(receivedEvent).toBe(toolEvent);
     });
@@ -258,9 +266,11 @@ describe("createOmpPlannotatorHostAdapter - tool_call interception", () => {
             input: { command: "git status" },
         };
         expect(hostHandler).toBeDefined();
+
         if (hostHandler === undefined) {
             throw new Error("Expected hostHandler to be registered");
         }
+
         await hostHandler(toolEvent, context);
         expect(receivedEvent).toBe(toolEvent);
     });

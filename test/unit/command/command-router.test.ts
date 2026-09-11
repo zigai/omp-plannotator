@@ -22,6 +22,7 @@ type RecordingCommand = {
 
 function createRecordingCommand(name: string): RecordingCommand {
     const calls: RecordedCall[] = [];
+
     return {
         command: {
             name,
@@ -38,6 +39,7 @@ function createCapturedCommands() {
     const review = createRecordingCommand("plannotator-review");
     const annotate = createRecordingCommand("plannotator-annotate");
     const last = createRecordingCommand("plannotator-last");
+
     const commands = new Map<string, RegisteredCommand>([
         [review.command.name, review.command],
         [annotate.command.name, annotate.command],
@@ -55,11 +57,13 @@ function getRequiredCommand(
     if (command === undefined) {
         throw new Error(`Expected command "${name}" to be registered`);
     }
+
     return command;
 }
 describe("registerPlannotatorCommand - registration", () => {
     it("throws if an upstream command required by smart dispatch is missing", () => {
         const harness = createRecordingApiHarness();
+
         const incompleteCommands = new Map<string, RegisteredCommand>([
             ["plannotator-review", createRecordingCommand("plannotator-review").command],
         ]);
@@ -85,6 +89,7 @@ describe("registerPlannotatorCommand - registration", () => {
         expect(plannotatorCommand?.description).toBe(
             "Plannotator annotation and code review commands",
         );
+
         expect(plannotatorCommand?.getArgumentCompletions).toBeUndefined();
     });
 });

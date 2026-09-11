@@ -24,6 +24,7 @@ interface RecordingCommand {
 
 function createRecordingCommand(name: string): RecordingCommand {
     const calls: RecordedCall[] = [];
+
     return {
         calls,
         command: {
@@ -115,6 +116,7 @@ describe("resolveShortcutFromConfig", () => {
                 userBindings: { "anno.last": "none" },
             }),
         ).toBeUndefined();
+
         expect(
             resolveShortcutFromConfig(["anno.last"], ANNO_LAST_SHORTCUT, {
                 userBindings: { "anno.last": "off" },
@@ -229,6 +231,7 @@ describe("registerPlannotatorShortcuts", () => {
     it("ignores alt+shift+d invocation when agent is not idle", async () => {
         const harness = createRecordingApiHarness();
         const review = createRecordingCommand("plannotator-review");
+
         const commands = new Map<string, RegisteredCommand>([
             ["plannotator-review", review.command],
         ]);
@@ -246,6 +249,7 @@ describe("registerPlannotatorShortcuts", () => {
     it("dispatches review command with empty args via alt+shift+d when agent is idle", async () => {
         const harness = createRecordingApiHarness();
         const review = createRecordingCommand("plannotator-review");
+
         const commands = new Map<string, RegisteredCommand>([
             ["plannotator-review", review.command],
         ]);
@@ -287,6 +291,7 @@ describe("registerPlannotatorShortcuts", () => {
                 throw new Error("Browser launch failed");
             },
         };
+
         const commands = new Map<string, RegisteredCommand>([
             ["plannotator-last", throwingCommand],
         ]);

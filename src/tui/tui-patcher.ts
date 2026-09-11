@@ -11,6 +11,7 @@ export function patchPlanReviewOverlays(tui: TUI, openPlan: () => void): () => v
     const existing = patchableTui[TUI_PATCH_STATE];
     if (existing !== undefined) {
         existing.openPlan = openPlan;
+
         return () => {};
     }
 
@@ -29,6 +30,7 @@ export function patchPlanReviewOverlays(tui: TUI, openPlan: () => void): () => v
                           () => state.openPlan(),
                           () => tui.requestRender(),
                       );
+
             return originalShowOverlay.call(tui, overlay, options);
         },
         openPlan,
@@ -41,7 +43,9 @@ export function patchPlanReviewOverlays(tui: TUI, openPlan: () => void): () => v
         if (patchableTui[TUI_PATCH_STATE] !== state) {
             return;
         }
+
         tui.showOverlay = originalShowOverlay;
+
         // Clean up symbol-indexed patch state on the host TUI instance during unpatch.
         // `delete` removes the property from the host object so future existence checks return false.
         delete patchableTui[TUI_PATCH_STATE];
@@ -61,6 +65,7 @@ export function installPlanReviewPlannotatorHook(
         activePlanPath = undefined;
         removeTuiPatch?.();
         removeTuiPatch = undefined;
+
         if (!context.hasUI) {
             return;
         }
@@ -78,6 +83,7 @@ export function installPlanReviewPlannotatorHook(
                 );
             });
             done();
+
             return {
                 render: () => [],
             };
@@ -99,6 +105,7 @@ export function installPlanReviewPlannotatorHook(
             currentContext = undefined;
             activePlanPath = undefined;
         }
+
         removeTuiPatch?.();
         removeTuiPatch = undefined;
     });

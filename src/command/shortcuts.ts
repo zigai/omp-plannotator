@@ -11,6 +11,7 @@ import { getKeybindings } from "@oh-my-pi/pi-tui";
 import { toCommandContext } from "../plan.ts";
 import { dispatchCommand } from "./command-router.ts";
 import { ANNO_DIFF_SHORTCUT, ANNO_LAST_SHORTCUT } from "./constants.ts";
+
 export interface ParsedKeybindingsConfig {
     readonly [key: string]: readonly string[];
 }
@@ -37,11 +38,13 @@ function parseJsonBindings(trimmed: string): Record<string, string[]> | undefine
                     map[k] = v.filter((item): item is string => typeof item === "string");
                 }
             }
+
             return map;
         }
     } catch {
         // Fall through to YAML parsing
     }
+
     return undefined;
 }
 
@@ -67,6 +70,7 @@ export function parseSimpleKeybindings(content: string): ParsedKeybindingsConfig
         if (kvMatch !== null) {
             const key = kvMatch[1]?.trim();
             const val = kvMatch[2]?.trim() ?? "";
+
             if (key === undefined || key === "") {
                 continue;
             }
@@ -112,10 +116,12 @@ function extractKeyId(value: KeybindingValue | undefined): KeyId | undefined | f
         if (value.length === 0) {
             return undefined;
         }
+
         const first: unknown = value[0];
         if (typeof first !== "string") {
             return undefined;
         }
+
         const trimmed = first.trim();
         if (trimmed === "none" || trimmed === "off" || trimmed === "") {
             return undefined;
@@ -124,6 +130,7 @@ function extractKeyId(value: KeybindingValue | undefined): KeyId | undefined | f
         /* oxlint-disable-next-line typescript/no-unsafe-type-assertion */
         return trimmed.toLowerCase() as KeyId;
     }
+
     if (typeof value === "string") {
         const trimmed = value.trim();
         if (trimmed === "none" || trimmed === "off" || trimmed === "" || trimmed === "[]") {
@@ -133,8 +140,10 @@ function extractKeyId(value: KeybindingValue | undefined): KeyId | undefined | f
         /* oxlint-disable-next-line typescript/no-unsafe-type-assertion */
         return trimmed.toLowerCase() as KeyId;
     }
+
     return false;
 }
+
 function findKeyInBindings(
     bindings: KeybindingRecord,
     actionNames: readonly string[],
@@ -147,6 +156,7 @@ function findKeyInBindings(
             }
         }
     }
+
     return false;
 }
 

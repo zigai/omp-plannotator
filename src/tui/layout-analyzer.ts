@@ -20,6 +20,7 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
     if (!lines.some((line) => stripVTControlCharacters(line).includes(PLAN_REVIEW_TITLE))) {
         return undefined;
     }
+
     if (!lines.some((line) => stripVTControlCharacters(line).includes(PLAN_REVIEW_PROMPT))) {
         return undefined;
     }
@@ -31,6 +32,7 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
             optionRows.push({ row, label });
         }
     }
+
     optionRows.sort((left, right) => left.row - right.row);
     let lastOption = optionRows.at(-1);
     for (const label of LAST_HOST_OPTION_LABELS) {
@@ -40,6 +42,7 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
             break;
         }
     }
+
     if (lastOption === undefined) {
         return undefined;
     }
@@ -63,6 +66,7 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
             break;
         }
     }
+
     const removeRow = bodyDividerRow - 1;
     if (removeRow <= 0 || removeRow >= firstOption.row) {
         return undefined;
@@ -75,6 +79,7 @@ export function analyzePlanReviewLayout(lines: readonly string[]): PlanReviewLay
         if (labelColumn < 0 || leftBorderColumn < 0) {
             return false;
         }
+
         return plain.slice(leftBorderColumn + 1, labelColumn).trim().length > 0;
     });
     const unselectedTemplate = optionRows.find((option) => option !== selectedHostOption);

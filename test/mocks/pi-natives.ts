@@ -5,6 +5,7 @@ export const listWorkspace = () => [];
 export const sliceWithWidth = (s: string, startCol = 0, length = s.length) => ({
     text: s.slice(startCol, startCol + length),
 });
+
 export const truncateToWidth = (s: string, width = s.length) => s.slice(0, width);
 export const visibleWidth = (s: string) => s.length;
 const KEY_SEQUENCES = {
@@ -22,8 +23,10 @@ function isRecognizedKey(keyId: string): keyId is keyof typeof KEY_SEQUENCES {
 
 export const matchesKey = (data: string, keyId: string, kittyProtocolActive: boolean): boolean => {
     void kittyProtocolActive;
+
     if (isRecognizedKey(keyId)) {
         return KEY_SEQUENCES[keyId].some((sequence) => sequence === data);
     }
+
     return false;
 };

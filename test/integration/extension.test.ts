@@ -19,10 +19,12 @@ describe("omp-plannotator integration", () => {
         expect(harness.shortcuts.get("alt+shift+a")?.description).toBe(
             "Annotate last assistant response in Plannotator",
         );
+
         expect(harness.shortcuts.has("alt+shift+d")).toBe(true);
         expect(harness.shortcuts.get("alt+shift+d")?.description).toBe(
             "Review working tree diff in Plannotator",
         );
+
         expect(harness.handlers.get("session_start")?.length).toBeGreaterThan(1);
         expect(harness.handlers.get("session_shutdown")?.length).toBeGreaterThan(1);
     });

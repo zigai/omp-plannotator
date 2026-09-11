@@ -38,10 +38,13 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
         if (options.description !== undefined) {
             commandEntry.description = options.description;
         }
+
         if (options.getArgumentCompletions !== undefined) {
             commandEntry.getArgumentCompletions = options.getArgumentCompletions;
         }
+
         commands.set(name, commandEntry);
+
         // Keep upstream commands as private implementation details for the unified /plannotator router.
     };
 
@@ -56,6 +59,7 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
         if (options?.deliverAs === "followUp" && context?.isIdle() === true) {
             return undefined;
         }
+
         return options;
     }
 
@@ -65,8 +69,10 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
             pi.sendUserMessage(content);
             return;
         }
+
         pi.sendUserMessage(content, resolvedOptions);
     };
+
     const onOverride = <E, R = undefined>(event: string, handler: ExtensionHandler<E, R>): void => {
         if (event === "tool_call") {
             // SAFETY: Verified event name "tool_call" guarantees handler parameter matches ToolCallEvent.
@@ -84,7 +90,9 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
                     if (targets.length === 0) {
                         return toolCallHandler(toolEvent, ctx);
                     }
+
                     let lastResult: ToolCallEventResult | void = undefined;
+
                     for (const targetPath of targets) {
                         const clonedEvent: ToolCallEvent = {
                             ...toolEvent,
@@ -94,15 +102,20 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
                         if (result && typeof result === "object" && result.block === true) {
                             return result;
                         }
+
                         if (result !== undefined) {
                             lastResult = result;
                         }
                     }
+
                     return lastResult;
                 }
+
                 return toolCallHandler(toolEvent, ctx);
             };
+
             pi.on("tool_call", wrappedHandler);
+
             return;
         }
 
@@ -122,7 +135,6 @@ export function createOmpPlannotatorHostAdapter(pi: ExtensionAPI): OmpPlannotato
         sendUserMessage: sendUserMessageOverride,
         on: onOverride,
     }) as ExtensionAPI;
-
     return {
         api: adaptedApi,
         commands,

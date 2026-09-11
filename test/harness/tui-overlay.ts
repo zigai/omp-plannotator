@@ -27,17 +27,21 @@ export class FakePlanReviewOverlay implements Component {
             const option = HOST_OPTIONS[index] ?? "";
             rows.push(`│ ${cursor}${option.padEnd(25)}│`);
         }
+
         rows.push("│ ↑↓ select · ⏎ confirm       │");
         rows.push("╰─────────────────────────────╯");
+
         return rows;
     }
 
     handleInput(data: string): void {
         this.inputs.push(data);
+
         if (data === "\x1b[B" || data === "j") {
             this.selectedIndex = (this.selectedIndex + 1) % HOST_OPTIONS.length;
             return;
         }
+
         if (data === "\x1b[A" || data === "k") {
             this.selectedIndex =
                 (this.selectedIndex + HOST_OPTIONS.length - 1) % HOST_OPTIONS.length;
@@ -60,5 +64,6 @@ export function createDecoratedOverlay(selectedIndex = 0) {
         },
         requestRender,
     );
+
     return { original, overlay, opened, requestRender };
 }

@@ -33,6 +33,7 @@ describe("installPlanReviewPlannotatorHook", () => {
             requestRender: vi.fn(),
             showOverlay(component: Component) {
                 shownOverlay = component;
+
                 return {
                     hide(): void {},
                     setHidden(hidden: boolean): void {
@@ -52,6 +53,7 @@ describe("installPlanReviewPlannotatorHook", () => {
             readonly args: string;
             readonly context: ExtensionCommandContext;
         }> = [];
+
         const commands = new Map<string, RegisteredCommand>([
             [
                 "plannotator-annotate",
@@ -63,6 +65,7 @@ describe("installPlanReviewPlannotatorHook", () => {
                 },
             ],
         ]);
+
         const artifactDirectory = mkdtempSync(join(tmpdir(), "omp-plannotator-hook-"));
         temporaryDirectories.push(artifactDirectory);
         const localDirectory = join(artifactDirectory, "local");
@@ -107,6 +110,7 @@ describe("installPlanReviewPlannotatorHook", () => {
             /* oxlint-disable-next-line antislop/no-chained-type-assertions, typescript/no-unsafe-type-assertion */
             await handler({}, context as unknown as ExtensionContext);
         }
+
         const toolEvent: ToolCallEvent = {
             type: "tool_call",
             toolCallId: "write-plan",
@@ -123,11 +127,13 @@ describe("installPlanReviewPlannotatorHook", () => {
         /* oxlint-disable-next-line antislop/no-chained-type-assertions, typescript/no-unsafe-type-assertion */
         (tui as unknown as TUI).showOverlay(new FakePlanReviewOverlay(HOST_OPTIONS.length - 2));
         expect(shownOverlay).toBeInstanceOf(PlannotatorPlanReviewOverlay);
+
         if (!(shownOverlay instanceof PlannotatorPlanReviewOverlay)) {
             throw new Error(
                 "Expected shownOverlay to be an instance of PlannotatorPlanReviewOverlay",
             );
         }
+
         shownOverlay.render(80);
         shownOverlay.handleInput?.("\x1b[B");
         shownOverlay.handleInput?.("\r");

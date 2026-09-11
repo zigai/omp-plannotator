@@ -27,6 +27,7 @@ export function planPathFromToolCall(event: ToolCallEvent): string | undefined {
     if (base === "plan.md" || base.endsWith("-plan.md") || base.endsWith("_plan.md")) {
         return path;
     }
+
     return undefined;
 }
 
@@ -41,16 +42,19 @@ export function resolveLocalPath(path: string, context: ExtensionContext): strin
             ? join(tmpdir(), "omp-local", sessionId)
             : resolve(artifactsDir, "local");
     let decodedPath: string;
+
     try {
         const url = new URL(path);
         if (url.protocol !== "local:") return undefined;
         if (url.host === "" && url.pathname.startsWith("/")) return undefined;
         if (path.includes("..")) return undefined;
+
         const rawPath = url.host ? `${url.host}${url.pathname}` : url.pathname.replace(/^\/+/u, "");
         decodedPath = decodeURIComponent(rawPath);
     } catch {
         return undefined;
     }
+
     if (
         decodedPath.length === 0 ||
         decodedPath.startsWith("/") ||
@@ -68,6 +72,7 @@ export function resolveLocalPath(path: string, context: ExtensionContext): strin
     ) {
         return undefined;
     }
+
     return resolvedPath;
 }
 
@@ -79,6 +84,7 @@ export function resolveExistingPlanPath(
     if (planPath !== undefined) {
         candidates.push(planPath);
     }
+
     if (!candidates.includes(DEFAULT_PLAN_PATH)) {
         candidates.push(DEFAULT_PLAN_PATH);
     }
@@ -91,6 +97,7 @@ export function resolveExistingPlanPath(
             return resolvedPath;
         }
     }
+
     return undefined;
 }
 

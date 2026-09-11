@@ -22,6 +22,7 @@ export async function dispatchCommand(
         ctx.ui.notify(`Plannotator ${name} command not available`, "error");
         return;
     }
+
     await command.handler(args, ctx);
 }
 
@@ -41,7 +42,6 @@ export function registerPlannotatorCommand(
         description: "Plannotator annotation and code review commands",
         async handler(args: string, ctx: ExtensionCommandContext): Promise<void> {
             const trimmed = args.trim();
-
             const firstToken = trimmed.split(/\s+/)[0] ?? "";
             const remainder = trimmed.slice(firstToken.length).trimStart();
 
@@ -71,6 +71,7 @@ export function registerPlannotatorCommand(
 
     pi.registerCommand(ANNO_COMMAND_NAME, commandDefinition);
     pi.registerCommand(PLANNOTATOR_COMMAND_NAME, commandDefinition);
+
     const registerAutocomplete = (context: ExtensionContext): void => {
         if (context.hasUI && typeof context.ui.addAutocompleteProvider === "function") {
             context.ui.addAutocompleteProvider(createPlannotatorGhostTextProvider);
@@ -79,6 +80,7 @@ export function registerPlannotatorCommand(
 
     pi.on("session_start", (_event, context) => {
         registerAutocomplete(context);
+
         if (typeof context.setTimeout === "function") {
             context.setTimeout(() => {
                 registerAutocomplete(context);

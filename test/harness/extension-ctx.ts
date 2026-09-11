@@ -21,10 +21,12 @@ export function createTestExtensionContext(
         readonly idle?: boolean;
         readonly cwd?: string;
         readonly hasUI?: boolean;
+
         readonly localProtocolOptions?: {
             readonly getArtifactsDir?: () => string | undefined;
             readonly getSessionId?: () => string | undefined;
         };
+
         readonly omitSessionManager?: boolean;
     } = {},
 ): TestExtensionContextFixture {
@@ -97,8 +99,10 @@ export function createTempPlanFixture(name = "plan.md", content = "# Plan"): Tem
     const tempDir = mkdtempSync(join(tmpdir(), "omp-test-plan-"));
     const planFile = join(tempDir, name);
     writeFileSync(planFile, content);
+
     const cleanup = () => {
         rmSync(tempDir, { recursive: true, force: true });
     };
+
     return { tempDir, planFile, cleanup };
 }

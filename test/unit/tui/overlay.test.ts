@@ -13,6 +13,7 @@ describe("PlannotatorPlanReviewOverlay", () => {
         expect(
             decoratedLines.filter((line) => line.includes(ANNOTATE_PLAN_OPTION_LABEL)),
         ).toHaveLength(1);
+
         expect(decoratedLines[saveRow - 1]).toContain(ANNOTATE_PLAN_OPTION_LABEL);
         expect(decoratedLines.some((line) => line.includes("body three"))).toBe(false);
         expect(decoratedLines.at(-1)).toContain("╰");
@@ -23,7 +24,6 @@ describe("PlannotatorPlanReviewOverlay", () => {
             HOST_OPTIONS.length - 2,
         );
         overlay.render(80);
-
         overlay.handleInput("\x1b[B");
         const selectedLines = renderedPlainLines(overlay);
         const selectedRow = selectedLines.find((line) => line.includes(ANNOTATE_PLAN_OPTION_LABEL));

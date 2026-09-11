@@ -32,6 +32,7 @@ export function getAnnoInlineHint(textBeforeCursor: string): string | null {
             const result = remaining + usagePart;
             return result.length > 0 ? result : null;
         }
+
         return null;
     }
 
@@ -58,6 +59,7 @@ export function createPlannotatorGhostTextProvider(
 
             const result = await base.getSuggestions(lines, line, col);
             if (!result) return null;
+
             return {
                 ...result,
                 items: result.items.map((item) =>
@@ -77,6 +79,7 @@ export function createPlannotatorGhostTextProvider(
             if (hint !== null) {
                 return hint;
             }
+
             return base.getInlineHint?.(lines, cursorLine, cursorCol) ?? null;
         },
         trySyncSlashCompletion(textBeforeCursor: string) {
@@ -90,8 +93,9 @@ export function createPlannotatorGhostTextProvider(
         },
     };
     if (base.getForceFileSuggestions !== undefined) {
-        provider.getForceFileSuggestions = (lines, cursorLine, cursorCol) =>
+        provider.getForceFileSuggestions = async (lines, cursorLine, cursorCol) =>
             base.getForceFileSuggestions!(lines, cursorLine, cursorCol);
     }
+
     return provider;
 }

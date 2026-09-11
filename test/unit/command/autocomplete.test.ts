@@ -40,6 +40,7 @@ describe("createPlannotatorGhostTextProvider", () => {
 
         expect(result).toBeNull();
     });
+
     it("suppresses dropdown suggestions when typing /anno or /plannotator and arguments", async () => {
         const fakeBaseProvider: AutocompleteProvider = {
             getSuggestions: async () => ({
@@ -130,6 +131,7 @@ describe("createPlannotatorGhostTextProvider", () => {
         expect(provider.getInlineHint?.(["/plannotator"], 0, 12)).toBe(
             ` ${PLANNOTATOR_GHOST_HINT}`,
         );
+
         expect(provider.getInlineHint?.(["/plannotator "], 0, 13)).toBe(PLANNOTATOR_GHOST_HINT);
         expect(provider.getInlineHint?.(["/other"], 0, 6)).toBe("base-hint");
     });
@@ -139,9 +141,11 @@ describe("createPlannotatorGhostTextProvider", () => {
             async getSuggestions() {
                 return null;
             }
+
             applyCompletion(lines: string[], cursorLine: number, cursorCol: number) {
                 return { lines, cursorLine, cursorCol };
             }
+
             trySyncSlashCompletion(prefix: string) {
                 return { items: [], prefix };
             }
@@ -155,7 +159,7 @@ describe("createPlannotatorGhostTextProvider", () => {
 
     it("delegates applyCompletion correctly when base provider has private fields", () => {
         class BaseWithPrivateField implements AutocompleteProvider {
-            #secret = "delegated";
+            readonly #secret = "delegated";
 
             async getSuggestions() {
                 return null;
@@ -206,6 +210,7 @@ describe("createPlannotatorGhostTextProvider", () => {
             { value: "anno", label: "anno", hint: ` ${PLANNOTATOR_GHOST_HINT}` },
             { value: "plannotator", label: "plannotator", hint: ` ${PLANNOTATOR_GHOST_HINT}` },
         ]);
+
         expect(provider.getInlineHint?.(["/anno"], 0, 5)).toBe(` ${PLANNOTATOR_GHOST_HINT}`);
         expect(provider.getInlineHint?.(["/help"], 0, 5)).toBe("base-hint");
     });

@@ -71,6 +71,7 @@ export class PlannotatorPlanReviewOverlay implements Component {
         );
 
         output.splice(layout.removeRow, 1);
+
         const insertedOptionRow = layout.lastHostOptionRow - 1;
         output.splice(insertedOptionRow, 0, insertedRow);
 
@@ -80,6 +81,7 @@ export class PlannotatorPlanReviewOverlay implements Component {
         };
         this.#precedingHostOptionSelected =
             layout.actionsFocused && layout.selectedHostOptionRow === layout.precedingHostOptionRow;
+
         return output;
     }
 
@@ -92,15 +94,18 @@ export class PlannotatorPlanReviewOverlay implements Component {
                     this.original.handleInput?.(data);
                     return;
                 }
+
                 if (mouse.motion) {
                     this.#insertedOptionSelected = true;
                     this.requestRender();
                     return;
                 }
+
                 if (mouse.leftClick) {
                     this.#choosePlannotator();
                     return;
                 }
+
                 return;
             }
 
@@ -108,7 +113,9 @@ export class PlannotatorPlanReviewOverlay implements Component {
                 this.#insertedOptionSelected = false;
                 this.requestRender();
             }
+
             this.original.handleInput?.(shiftMouseRow(data, renderedLayout));
+
             return;
         }
 
@@ -118,16 +125,19 @@ export class PlannotatorPlanReviewOverlay implements Component {
                 this.requestRender();
                 return;
             }
+
             if (matchesKey(data, "enter") || matchesKey(data, "return") || data === "\n") {
                 this.#choosePlannotator();
                 return;
             }
+
             if (matchesKey(data, "down") || matchesKey(data, "j")) {
                 this.#insertedOptionSelected = false;
                 this.original.handleInput?.(data);
                 this.requestRender();
                 return;
             }
+
             this.#insertedOptionSelected = false;
         } else if (
             this.#precedingHostOptionSelected &&
@@ -161,7 +171,9 @@ export class PlannotatorPlanReviewOverlay implements Component {
         if (line === undefined) {
             return fallback;
         }
+
         const plain = stripVTControlCharacters(line);
+
         return HOST_OPTIONS.find((label) => plain.includes(label)) ?? fallback;
     }
 }

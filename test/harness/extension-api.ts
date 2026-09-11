@@ -23,6 +23,7 @@ export interface RecordedSendUserMessage {
 
 export interface RecordedCommandRegistration {
     readonly name: string;
+
     readonly options: {
         readonly description?: string;
         readonly getArgumentCompletions?: RegisteredCommand["getArgumentCompletions"];
@@ -40,6 +41,7 @@ export interface RecordingApiHarness {
     readonly sentUserMessages: readonly RecordedSendUserMessage[];
     readonly registeredCommands: readonly RecordedCommandRegistration[];
     readonly appendedEntries: readonly { readonly customType: string; readonly data: unknown }[];
+
     emitEvent: <E, R = unknown>(
         event: string,
         payload: E,
@@ -75,9 +77,11 @@ export function createRecordingApiHarness(
             if (commandOptions.description !== undefined) {
                 commandEntry.description = commandOptions.description;
             }
+
             if (commandOptions.getArgumentCompletions !== undefined) {
                 commandEntry.getArgumentCompletions = commandOptions.getArgumentCompletions;
             }
+
             commands.set(name, commandEntry);
             registeredCommands.push({ name, options: commandOptions });
         },
@@ -127,6 +131,7 @@ export function createRecordingApiHarness(
     ): Promise<R | void> {
         const list = handlers.get(event) ?? [];
         let lastResult: R | void = undefined;
+
         for (const handler of list) {
             // SAFETY: Event handler return value conforms to expected test return type R.
             /* oxlint-disable-next-line typescript/no-unsafe-type-assertion */
@@ -135,6 +140,7 @@ export function createRecordingApiHarness(
                 lastResult = result;
             }
         }
+
         return lastResult;
     }
 

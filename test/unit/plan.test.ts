@@ -22,6 +22,7 @@ afterEach(() => {
     for (const cleanup of cleanups.splice(0)) {
         cleanup();
     }
+
     for (const dir of temporaryDirectories.splice(0)) {
         rmSync(dir, { recursive: true, force: true });
     }
@@ -191,6 +192,7 @@ describe("openPlanInPlannotator", () => {
         const { tempDir, planFile } = fixture;
         const { context } = createTestExtensionContext({ cwd: tempDir });
         const calls: string[] = [];
+
         const commands = new Map<string, RegisteredCommand>([
             [
                 "plannotator-annotate",
@@ -213,6 +215,7 @@ describe("openPlanInPlannotator", () => {
         cleanups.push(fixture.cleanup);
         const { tempDir } = fixture;
         const { context, notifications } = createTestExtensionContext({ cwd: tempDir });
+
         const commands = new Map<string, RegisteredCommand>([
             [
                 "plannotator-annotate",
@@ -242,6 +245,7 @@ describe("openPlanInPlannotator", () => {
         const { context } = createTestExtensionContext({ cwd: tempDir });
         let receivedArgs: string | undefined;
         let receivedContext: ExtensionCommandContext | undefined;
+
         const commands = new Map<string, RegisteredCommand>([
             [
                 "plannotator-annotate",
@@ -259,9 +263,11 @@ describe("openPlanInPlannotator", () => {
 
         expect(receivedArgs).toBe(JSON.stringify(planFile));
         expect(receivedContext).toBeDefined();
+
         if (receivedContext === undefined) {
             throw new Error("Expected receivedContext to be defined");
         }
+
         expect(receivedContext.cwd).toBe(tempDir);
         expect(receivedContext.ui).toBe(context.ui);
         expect(receivedContext.sessionManager).toBe(context.sessionManager);
